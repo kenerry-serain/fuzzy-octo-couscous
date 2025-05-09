@@ -1,0 +1,73 @@
+name: Continuous Integration
+
+on:
+  pull_request:
+    paths:
+      - 'terraform/**'
+  push:
+    branches: [ main ]
+    paths:
+      - 'terraform/**'
+
+jobs:
+  terraform:
+    name: Terraform Validate & Plan
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        module:
+          - backend
+          - networking
+          - server
+          - serverless
+          - site
+
+    defaults:
+      run:
+        working-directory: terraform/${{ matrix.module }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.11
+
+      - uses: aws-actions/configure-aws-credentials@v2
+        with:
+         role-to-assume: arn:aws:iam::654654554686:role/DevOpsNaNuvemRole-9db671b2-c6ce-460c-9eb0-f27e903d0f9a
+         external-id: f2ed091d-8d7d-46cb-be56-fb349d502cfb
+         aws-region: us-east-1
+
+      - name: Terraform Format Check
+        run: terraform fmt -check -recursive
+
+      - name: Run TFLint
+        uses: terraform-linters/setup-tflint@v4
+        with:
+          tflint_version: latest
+
+      - name: TFLint Check
+        run: |
+          tflint --init
+          tflint --recursive
+          
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Validate
+        run: terraform validate
+
+      - name: Terraform Plan
+        run: terraform plan -no-color
+
+      - name: Save Plan Output
+        run: terraform plan -out=tfplan.binary
+      
+      - uses: actions/upload-artifact@v3
+        with:
+          name: plan-${{ matrix.module }}
+          path: terraform/${{ matrix.module }}/tfplan.binary

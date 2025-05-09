@@ -1,0 +1,5 @@
+---
+- name: Join Control Planes
+  vars:
+    join_control_plane: "{{ lookup('file', '/tmp/kubeadm-join-control-plane.txt') }}"
+  shell: "export KUBELET_EXTRA_ARGS=\"--cloud-provider=external\" && {{ join_control_plane }}"
