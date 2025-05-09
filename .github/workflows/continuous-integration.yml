@@ -43,7 +43,7 @@ jobs:
       - uses: aws-actions/configure-aws-credentials@v4
         with:
          role-to-assume: arn:aws:iam::654654554686:role/DevOpsNaNuvemRole-9db671b2-c6ce-460c-9eb0-f27e903d0f9a
-         external-id: f2ed091d-8d7d-46cb-be56-fb349d502cfb
+         role-external-id: f2ed091d-8d7d-46cb-be56-fb349d502cfb
          aws-region: us-east-1
 
       - name: Terraform Format Check
